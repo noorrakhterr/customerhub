@@ -28,7 +28,8 @@ export function groupByRisk(
     low: [],
   };
   for (const customer of customers) {
-    groups[customer.riskLevel].push(customer);
+    const level = RISK_LEVELS.includes(customer.riskLevel) ? customer.riskLevel : 'moderate';
+    groups[level].push(customer);
   }
   for (const level of RISK_LEVELS) {
     groups[level].sort(
