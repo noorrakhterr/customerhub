@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { SlideOver } from '../shared/SlideOver';
 import { Button } from '../shared/Button';
-import { OutreachGroup } from '../tasks/OutreachGroup';
 import { TaskRow } from '../tasks/TaskRow';
 import { RISK_LEVELS, RISK_LEVEL_LABELS } from '../../data/priority';
+import { OUTREACH_INTERVAL_DAYS } from '../../data/taskKinds';
 import type { CtaType, Customer, NewCustomer, RiskLevel } from '../../types/customer';
 import type { Doc, NewDoc } from '../../types/doc';
 import type { NewTask, Task, TaskKind } from '../../types/task';
@@ -25,7 +25,7 @@ interface CustomerDetailPanelProps {
   onEditTask: (id: string, patch: Partial<NewTask>) => void;
   onDeleteTask: (id: string) => void;
   onToggleTaskComplete: (id: string) => void;
-  onMarkCustomerResponded: (customerId: string) => void;
+  onMarkCustomerResponded: (customerId: string, responseText: string) => void;
   onAddDoc: (input: NewDoc) => void;
 }
 
@@ -46,12 +46,15 @@ export function CustomerDetailPanel({
   const [tab, setTab] = useState<Tab>('details');
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
+  const [responseText, setResponseText] = useState('');
   const [docTitle, setDocTitle] = useState('');
   const [docLink, setDocLink] = useState('');
   const [docNote, setDocNote] = useState('');
 
   const customerTasks = tasks.filter((t) => t.customerId === customer.id);
-  const outreachTasks = customerTasks.filter((t) => t.kind === 'customer_outreach');
+  const outreachTasks = customerTasks
+    .filter((t) => t.kind === 'customer_outreach')
+    .sort((a, b) => (a.outreachIndex ?? 0) - (b.outreachIndex ?? 0));
   const leadingTasks = LEADING_KINDS.map((kind) =>
     customerTasks.find((t) => t.kind === kind),
   ).filter((t): t is Task => Boolean(t));
@@ -63,8 +66,10 @@ export function CustomerDetailPanel({
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
   const hasOutreachStarted = outreachTasks.length > 0;
+  const hasResearchCustomer = customerTasks.some((t) => t.kind === 'research_customer');
   const hasMeetingPrep = customerTasks.some((t) => t.kind === 'meeting_prep');
-  const showCustomerRespondedButton = hasOutreachStarted && !hasMeetingPrep;
+  const showCustomerRespondedForm = hasOutreachStarted && !hasMeetingPrep;
+  const showStartOutreach = hasResearchCustomer && !hasOutreachStarted;
 
   const customerDocs = docs.filter((d) => d.customerId === customer.id);
 
@@ -80,6 +85,25 @@ export function CustomerDetailPanel({
     });
     setNewTaskTitle('');
     setNewTaskDueDate('');
+  };
+
+  const handleStartOutreach = () => {
+    const due = new Date();
+    due.setDate(due.getDate() + OUTREACH_INTERVAL_DAYS);
+    onAddTask({
+      customerId: customer.id,
+      kind: 'customer_outreach',
+      title: '',
+      dueDate: due.toISOString(),
+      completed: false,
+      outreachIndex: 1,
+      fields: {},
+    });
+  };
+
+  const handleMarkResponded = () => {
+    onMarkCustomerResponded(customer.id, responseText.trim());
+    setResponseText('');
   };
 
   const handleAddDoc = () => {
@@ -174,10 +198,10 @@ export function CustomerDetailPanel({
               <label>Renewal date</label>
               <input
                 type="date"
-                defaultValue={customer.renewalDate.slice(0, 10)}
+                defaultValue={customer.renewalDate ? customer.renewalDate.slice(0, 10) : ''}
                 onBlur={(e) =>
                   onUpdateCustomer(customer.id, {
-                    renewalDate: new Date(e.target.value).toISOString(),
+                    renewalDate: e.target.value ? new Date(e.target.value).toISOString() : '',
                   })
                 }
               />
@@ -221,6 +245,19 @@ export function CustomerDetailPanel({
             </div>
           )}
 
+          {customer.ctaType === 'Value Accelerator' && (
+            <div className="form-field">
+              <label>Value Accelerator Details</label>
+              <textarea
+                rows={3}
+                defaultValue={customer.valueAcceleratorDetails ?? ''}
+                onBlur={(e) =>
+                  onUpdateCustomer(customer.id, { valueAcceleratorDetails: e.target.value })
+                }
+              />
+            </div>
+          )}
+
           <div className="customer-detail__close-action">
             <Button
               variant="ghost"
@@ -251,19 +288,38 @@ export function CustomerDetailPanel({
                   onDeleteTask={onDeleteTask}
                 />
               ))}
-              <OutreachGroup
-                customerId={customer.id}
-                outreachTasks={outreachTasks}
-                onToggleComplete={onToggleTaskComplete}
-                onEditTask={onEditTask}
-                onDeleteTask={onDeleteTask}
-                onAddTask={onAddTask}
-              />
-              {showCustomerRespondedButton && (
+              {outreachTasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  onToggleComplete={onToggleTaskComplete}
+                  onEditTask={onEditTask}
+                  onDeleteTask={onDeleteTask}
+                />
+              ))}
+              {showStartOutreach && (
                 <div className="form-actions" style={{ justifyContent: 'flex-start' }}>
-                  <Button variant="ghost" small onClick={() => onMarkCustomerResponded(customer.id)}>
-                    Customer responded
+                  <Button variant="ghost" small onClick={handleStartOutreach}>
+                    + Start outreach
                   </Button>
+                </div>
+              )}
+              {showCustomerRespondedForm && (
+                <div className="customer-responded-form">
+                  <div className="form-field">
+                    <label>Customer response</label>
+                    <textarea
+                      rows={2}
+                      placeholder="What did they say?"
+                      value={responseText}
+                      onChange={(e) => setResponseText(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-actions" style={{ justifyContent: 'flex-start' }}>
+                    <Button variant="ghost" small onClick={handleMarkResponded}>
+                      Customer responded
+                    </Button>
+                  </div>
                 </div>
               )}
               {trailingTasks.map((task) => (

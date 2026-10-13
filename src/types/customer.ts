@@ -14,6 +14,7 @@ export interface Customer {
   renewalDate: string;
   healthScore: number;
   pathToGreenLink?: string;
+  valueAcceleratorDetails?: string;
   closed: boolean;
   createdAt: string;
   updatedAt: string;

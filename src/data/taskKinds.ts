@@ -18,8 +18,12 @@ export const TASK_KIND_LABELS: Record<TaskKind, string> = {
 export const TASK_KIND_FIELDS: Record<TaskKind, TaskFieldDef[]> = {
   ae_outreach: [{ key: 'exchangeNotes', label: 'Exchange & notes', type: 'textarea' }],
   research_customer: [{ key: 'notes', label: 'Notes', type: 'textarea' }],
-  customer_outreach: [{ key: 'notes', label: 'Notes', type: 'textarea' }],
+  customer_outreach: [
+    { key: 'contactedPerson', label: 'Who did you contact', type: 'text' },
+    { key: 'emailBody', label: 'Email body', type: 'textarea' },
+  ],
   meeting_prep: [
+    { key: 'customerResponse', label: 'Customer response', type: 'textarea' },
     { key: 'deckLink', label: 'Deck link', type: 'url' },
     { key: 'prepNotes', label: 'Meeting prep notes', type: 'textarea' },
   ],
@@ -28,7 +32,7 @@ export const TASK_KIND_FIELDS: Record<TaskKind, TaskFieldDef[]> = {
     { key: 'followUpEmail', label: 'Follow-up email', type: 'textarea' },
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
-  custom: [],
+  custom: [{ key: 'notes', label: 'Notes', type: 'textarea' }],
 };
 
 export const AE_OUTREACH_DUE_IN_DAYS = 3;

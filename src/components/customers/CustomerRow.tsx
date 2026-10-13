@@ -1,3 +1,4 @@
+import { formatDate } from '../../data/dateUtils';
 import { taskDisplayTitle } from '../../data/taskKinds';
 import type { Customer } from '../../types/customer';
 import type { Task } from '../../types/task';
@@ -23,6 +24,7 @@ export function CustomerRow({ customer, tasks, onClick, onDelete }: CustomerRowP
       <td>{customer.accountExecutive || '—'}</td>
       <td>{customer.ctaType}</td>
       <td>{nextTask ? taskDisplayTitle(nextTask) : '—'}</td>
+      <td>{nextTask ? formatDate(nextTask.dueDate) : '—'}</td>
       <td className="col-delete">
         <button
           className="customer-row__delete"

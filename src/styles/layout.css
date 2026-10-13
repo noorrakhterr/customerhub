@@ -490,6 +490,13 @@
   border-bottom: none;
 }
 
+.customer-responded-form {
+  padding: var(--space-3);
+  margin: var(--space-2) 0;
+  background: var(--color-accent-bg);
+  border-radius: var(--radius-sm);
+}
+
 .task-row__main {
   display: flex;
   align-items: center;

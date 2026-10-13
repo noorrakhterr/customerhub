@@ -21,7 +21,7 @@ export function AddCustomerForm({ onClose, onSubmit }: AddCustomerFormProps) {
   const [renewalDate, setRenewalDate] = useState('');
   const [healthScore, setHealthScore] = useState('75');
 
-  const canSubmit = name.trim() && company.trim() && renewalDate;
+  const canSubmit = company.trim();
 
   const handleSubmit = () => {
     if (!canSubmit) return;
@@ -32,8 +32,8 @@ export function AddCustomerForm({ onClose, onSubmit }: AddCustomerFormProps) {
       ctaType,
       riskLevel,
       arr: arr ? Number(arr) : undefined,
-      renewalDate: new Date(renewalDate).toISOString(),
-      healthScore: Number(healthScore),
+      renewalDate: renewalDate ? new Date(renewalDate).toISOString() : '',
+      healthScore: healthScore ? Number(healthScore) : 0,
       closed: false,
     });
     onClose();

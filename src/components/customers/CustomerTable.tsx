@@ -20,6 +20,7 @@ export function CustomerTable({ groups, tasks, onSelectCustomer, onDeleteCustome
           <th>AE</th>
           <th>CTA Type</th>
           <th>Next Task</th>
+          <th>Next Task Due</th>
           <th className="col-delete"></th>
         </tr>
       </thead>
@@ -30,7 +31,7 @@ export function CustomerTable({ groups, tasks, onSelectCustomer, onDeleteCustome
           return (
             <Fragment key={level}>
               <tr className={`tier-row tier-row--${level}`}>
-                <td colSpan={5}>
+                <td colSpan={6}>
                   {RISK_LEVEL_LABELS[level]} ({customers.length})
                 </td>
               </tr>

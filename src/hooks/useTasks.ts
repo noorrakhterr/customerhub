@@ -54,7 +54,7 @@ export function useTasks() {
     refresh();
   };
 
-  const markCustomerResponded = (customerId: string) => {
+  const markCustomerResponded = (customerId: string, responseText: string) => {
     const existing = listTasks().filter((t) => t.customerId === customerId);
     if (existing.some((t) => t.kind === 'meeting_prep')) return;
     createTask({
@@ -63,7 +63,7 @@ export function useTasks() {
       title: '',
       dueDate: isoInDays(0),
       completed: false,
-      fields: {},
+      fields: { customerResponse: responseText },
     });
     refresh();
   };
@@ -111,7 +111,7 @@ export function useTasks() {
             dueDate: addDays(task.dueDate, OUTREACH_INTERVAL_DAYS),
             completed: false,
             outreachIndex: nextIndex,
-            fields: {},
+            fields: { contactedPerson: task.fields.contactedPerson ?? '' },
           });
         }
       } else if (task.kind === 'meeting_prep' && !hasKind('meeting_follow_up')) {
