@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { createTask, deleteTask, listTasks, updateTask } from '../data/tasks';
+import { toDateOnlyIso } from '../data/dateUtils';
 import { AE_OUTREACH_DUE_IN_DAYS, OUTREACH_INTERVAL_DAYS } from '../data/taskKinds';
 import type { NewTask, Task } from '../types/task';
 
-function addDays(iso: string, days: number): string {
-  const d = new Date(iso);
+function addDays(dateOnlyIso: string, days: number): string {
+  const [year, month, day] = dateOnlyIso.slice(0, 10).split('-').map(Number);
+  const d = new Date(year, month - 1, day);
   d.setDate(d.getDate() + days);
-  return d.toISOString();
+  return toDateOnlyIso(d);
 }
 
 function isoInDays(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() + days);
-  return d.toISOString();
+  return toDateOnlyIso(d);
 }
 
 export function useTasks() {

@@ -1,3 +1,15 @@
+function parseLocalDate(isoDate: string): Date {
+  const [year, month, day] = isoDate.slice(0, 10).split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+export function toDateOnlyIso(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function startOfDay(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -5,7 +17,7 @@ function startOfDay(date: Date): Date {
 }
 
 export function daysUntil(isoDate: string, today: Date = new Date()): number {
-  const target = startOfDay(new Date(isoDate));
+  const target = parseLocalDate(isoDate);
   const base = startOfDay(today);
   const msPerDay = 24 * 60 * 60 * 1000;
   return Math.round((target.getTime() - base.getTime()) / msPerDay);
@@ -21,7 +33,7 @@ export function isThisWeek(isoDate: string, today: Date = new Date()): boolean {
 }
 
 export function formatDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString(undefined, {
+  return parseLocalDate(isoDate).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
   });
