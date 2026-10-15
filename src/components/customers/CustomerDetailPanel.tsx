@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { SlideOver } from '../shared/SlideOver';
 import { Button } from '../shared/Button';
 import { TaskRow } from '../tasks/TaskRow';
+import { formatDate } from '../../data/dateUtils';
 import { RISK_LEVELS, RISK_LEVEL_LABELS } from '../../data/priority';
 import { OUTREACH_INTERVAL_DAYS } from '../../data/taskKinds';
 import type { CtaType, Customer, NewCustomer, RiskLevel } from '../../types/customer';
@@ -26,6 +27,7 @@ interface CustomerDetailPanelProps {
   onDeleteTask: (id: string) => void;
   onToggleTaskComplete: (id: string) => void;
   onMarkCustomerResponded: (customerId: string, responseText: string) => void;
+  onCloseCustomer: (customerId: string, reason: string) => void;
   onAddDoc: (input: NewDoc) => void;
 }
 
@@ -41,6 +43,7 @@ export function CustomerDetailPanel({
   onDeleteTask,
   onToggleTaskComplete,
   onMarkCustomerResponded,
+  onCloseCustomer,
   onAddDoc,
 }: CustomerDetailPanelProps) {
   const [tab, setTab] = useState<Tab>('details');
@@ -50,8 +53,15 @@ export function CustomerDetailPanel({
   const [docTitle, setDocTitle] = useState('');
   const [docLink, setDocLink] = useState('');
   const [docNote, setDocNote] = useState('');
+  const [showCloseReasonForm, setShowCloseReasonForm] = useState(false);
+  const [closeReason, setCloseReason] = useState('');
+
+  const isClosed = customer.closed;
 
   const customerTasks = tasks.filter((t) => t.customerId === customer.id);
+  const closureLogEntries = customerTasks
+    .filter((t) => t.kind === 'closure_log')
+    .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
   const outreachTasks = customerTasks
     .filter((t) => t.kind === 'customer_outreach')
     .sort((a, b) => (a.outreachIndex ?? 0) - (b.outreachIndex ?? 0));
@@ -68,8 +78,8 @@ export function CustomerDetailPanel({
   const hasOutreachStarted = outreachTasks.length > 0;
   const hasResearchCustomer = customerTasks.some((t) => t.kind === 'research_customer');
   const hasMeetingPrep = customerTasks.some((t) => t.kind === 'meeting_prep');
-  const showCustomerRespondedForm = hasOutreachStarted && !hasMeetingPrep;
-  const showStartOutreach = hasResearchCustomer && !hasOutreachStarted;
+  const showCustomerRespondedForm = hasOutreachStarted && !hasMeetingPrep && !isClosed;
+  const showStartOutreach = hasResearchCustomer && !hasOutreachStarted && !isClosed;
 
   const customerDocs = docs.filter((d) => d.customerId === customer.id);
 
@@ -126,6 +136,13 @@ export function CustomerDetailPanel({
     }
   };
 
+  const handleConfirmClose = () => {
+    if (!closeReason.trim()) return;
+    onCloseCustomer(customer.id, closeReason.trim());
+    setCloseReason('');
+    setShowCloseReasonForm(false);
+  };
+
   return (
     <SlideOver title={customer.company} onClose={onClose}>
       <div className="tabs">
@@ -133,7 +150,7 @@ export function CustomerDetailPanel({
           Details
         </button>
         <button className={`tab ${tab === 'tasks' ? 'tab--active' : ''}`} onClick={() => setTab('tasks')}>
-          Tasks ({customerTasks.filter((t) => !t.completed).length})
+          Timeline ({customerTasks.filter((t) => !t.completed).length})
         </button>
         <button className={`tab ${tab === 'docs' ? 'tab--active' : ''}`} onClick={() => setTab('docs')}>
           Docs
@@ -259,22 +276,71 @@ export function CustomerDetailPanel({
           )}
 
           <div className="customer-detail__close-action">
-            <Button
-              variant="ghost"
-              small
-              onClick={() => onUpdateCustomer(customer.id, { closed: !customer.closed })}
-            >
-              {customer.closed ? 'Reopen customer' : 'Close customer'}
-            </Button>
+            {isClosed ? (
+              <Button
+                variant="ghost"
+                small
+                onClick={() => onUpdateCustomer(customer.id, { closed: false })}
+              >
+                Reopen customer
+              </Button>
+            ) : (
+              <Button variant="ghost" small onClick={() => setShowCloseReasonForm(true)}>
+                Close customer
+              </Button>
+            )}
             <Button variant="ghost" small onClick={handleDeleteCustomer}>
               Delete customer
             </Button>
           </div>
+
+          {showCloseReasonForm && (
+            <div className="customer-responded-form">
+              <div className="form-field">
+                <label>Reason for closing</label>
+                <textarea
+                  rows={2}
+                  placeholder="Why is this customer being closed?"
+                  value={closeReason}
+                  onChange={(e) => setCloseReason(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="form-actions" style={{ justifyContent: 'flex-start' }}>
+                <Button variant="ghost" small onClick={handleConfirmClose} disabled={!closeReason.trim()}>
+                  Confirm close
+                </Button>
+                <Button
+                  variant="ghost"
+                  small
+                  onClick={() => {
+                    setShowCloseReasonForm(false);
+                    setCloseReason('');
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {tab === 'tasks' && (
         <div className="detail-section">
+          {isClosed && (
+            <p className="empty-state">
+              This customer is closed. Reopen it from the Details tab to add or update tasks.
+            </p>
+          )}
+
+          {closureLogEntries.map((entry) => (
+            <div className="customer-responded-form" key={entry.id}>
+              <strong>Closed on {formatDate(entry.dueDate)}</strong>
+              <p>{entry.fields.reason}</p>
+            </div>
+          ))}
+
           {leadingTasks.length === 0 && outreachTasks.length === 0 && trailingTasks.length === 0 && customTasks.length === 0 ? (
             <p className="empty-state">No tasks yet.</p>
           ) : (
@@ -286,6 +352,7 @@ export function CustomerDetailPanel({
                   onToggleComplete={onToggleTaskComplete}
                   onEditTask={onEditTask}
                   onDeleteTask={onDeleteTask}
+                  disabled={isClosed}
                 />
               ))}
               {outreachTasks.map((task) => (
@@ -295,6 +362,7 @@ export function CustomerDetailPanel({
                   onToggleComplete={onToggleTaskComplete}
                   onEditTask={onEditTask}
                   onDeleteTask={onDeleteTask}
+                  disabled={isClosed}
                 />
               ))}
               {showStartOutreach && (
@@ -329,6 +397,7 @@ export function CustomerDetailPanel({
                   onToggleComplete={onToggleTaskComplete}
                   onEditTask={onEditTask}
                   onDeleteTask={onDeleteTask}
+                  disabled={isClosed}
                 />
               ))}
               {customTasks.map((task) => (
@@ -338,28 +407,33 @@ export function CustomerDetailPanel({
                   onToggleComplete={onToggleTaskComplete}
                   onEditTask={onEditTask}
                   onDeleteTask={onDeleteTask}
+                  disabled={isClosed}
                 />
               ))}
             </>
           )}
 
-          <div className="form-row" style={{ marginTop: 'var(--space-3)' }}>
-            <input
-              placeholder="New task title"
-              value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-            />
-            <input
-              type="date"
-              value={newTaskDueDate}
-              onChange={(e) => setNewTaskDueDate(e.target.value)}
-            />
-          </div>
-          <div className="form-actions">
-            <Button variant="ghost" small onClick={handleAddCustomTask}>
-              Add task
-            </Button>
-          </div>
+          {!isClosed && (
+            <>
+              <div className="form-row" style={{ marginTop: 'var(--space-3)' }}>
+                <input
+                  placeholder="New task title"
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                />
+                <input
+                  type="date"
+                  value={newTaskDueDate}
+                  onChange={(e) => setNewTaskDueDate(e.target.value)}
+                />
+              </div>
+              <div className="form-actions">
+                <Button variant="ghost" small onClick={handleAddCustomTask}>
+                  Add task
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       )}
 

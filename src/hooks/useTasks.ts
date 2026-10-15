@@ -1,8 +1,13 @@
 import { useState } from 'react';
+import { getCustomer } from '../data/customers';
 import { createTask, deleteTask, listTasks, updateTask } from '../data/tasks';
 import { toDateOnlyIso } from '../data/dateUtils';
 import { AE_OUTREACH_DUE_IN_DAYS, OUTREACH_INTERVAL_DAYS } from '../data/taskKinds';
 import type { NewTask, Task } from '../types/task';
+
+function isCustomerClosed(customerId: string): boolean {
+  return getCustomer(customerId)?.closed ?? false;
+}
 
 function addDays(dateOnlyIso: string, days: number): string {
   const [year, month, day] = dateOnlyIso.slice(0, 10).split('-').map(Number);
@@ -23,6 +28,7 @@ export function useTasks() {
   const refresh = () => setTasks(listTasks());
 
   const add = (input: NewTask) => {
+    if (isCustomerClosed(input.customerId)) return;
     createTask(input);
     refresh();
   };
@@ -56,7 +62,20 @@ export function useTasks() {
     refresh();
   };
 
+  const addClosureLogEntry = (customerId: string, reason: string) => {
+    createTask({
+      customerId,
+      kind: 'closure_log',
+      title: '',
+      dueDate: isoInDays(0),
+      completed: true,
+      fields: { reason },
+    });
+    refresh();
+  };
+
   const markCustomerResponded = (customerId: string, responseText: string) => {
+    if (isCustomerClosed(customerId)) return;
     const existing = listTasks().filter((t) => t.customerId === customerId);
     if (existing.some((t) => t.kind === 'meeting_prep')) return;
     createTask({
@@ -77,7 +96,7 @@ export function useTasks() {
     const completed = !task.completed;
     updateTask(id, { completed });
 
-    if (completed) {
+    if (completed && !isCustomerClosed(task.customerId)) {
       const customerTasks = current.filter((t) => t.customerId === task.customerId);
       const hasKind = (kind: Task['kind']) => customerTasks.some((t) => t.kind === kind);
 
@@ -139,6 +158,7 @@ export function useTasks() {
     removeAllForCustomer,
     createInitialTask,
     markCustomerResponded,
+    addClosureLogEntry,
     toggleComplete,
     refresh,
   };

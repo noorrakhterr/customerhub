@@ -13,6 +13,7 @@ export const TASK_KIND_LABELS: Record<TaskKind, string> = {
   meeting_prep: 'Meeting Prep',
   meeting_follow_up: 'Meeting Follow-up',
   custom: 'Custom task',
+  closure_log: 'Customer closed',
 };
 
 export const TASK_KIND_FIELDS: Record<TaskKind, TaskFieldDef[]> = {
@@ -33,6 +34,7 @@ export const TASK_KIND_FIELDS: Record<TaskKind, TaskFieldDef[]> = {
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
   custom: [{ key: 'notes', label: 'Notes', type: 'textarea' }],
+  closure_log: [{ key: 'reason', label: 'Reason for closing', type: 'textarea' }],
 };
 
 export const AE_OUTREACH_DUE_IN_DAYS = 3;

@@ -21,6 +21,7 @@ export default function App() {
     removeAllForCustomer: removeAllTasksForCustomer,
     createInitialTask,
     markCustomerResponded,
+    addClosureLogEntry,
     toggleComplete,
   } = useTasks();
   const { meetings, add: addMeeting } = useMeetings();
@@ -39,6 +40,11 @@ export default function App() {
     removeCustomer(id);
     removeAllTasksForCustomer(id);
     removeAllDocsForCustomer(id);
+  };
+
+  const handleCloseCustomer = (id: string, reason: string) => {
+    addClosureLogEntry(id, reason);
+    editCustomer(id, { closed: true });
   };
 
   return (
@@ -78,6 +84,7 @@ export default function App() {
           onDeleteTask={removeTask}
           onToggleTaskComplete={toggleComplete}
           onMarkCustomerResponded={markCustomerResponded}
+          onCloseCustomer={handleCloseCustomer}
           onAddDoc={addDoc}
         />
       )}

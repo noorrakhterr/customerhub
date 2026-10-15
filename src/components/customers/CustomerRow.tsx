@@ -30,7 +30,9 @@ export function CustomerRow({ customer, tasks, onClick, onDelete }: CustomerRowP
           className="customer-row__delete"
           onClick={(e) => {
             e.stopPropagation();
-            onDelete();
+            if (window.confirm(`Delete ${customer.company}? This cannot be undone.`)) {
+              onDelete();
+            }
           }}
           aria-label="Delete customer"
         >

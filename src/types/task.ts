@@ -4,7 +4,8 @@ export type TaskKind =
   | 'customer_outreach'
   | 'meeting_prep'
   | 'meeting_follow_up'
-  | 'custom';
+  | 'custom'
+  | 'closure_log';
 
 export interface Task {
   id: string;
