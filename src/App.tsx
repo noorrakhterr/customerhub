@@ -66,6 +66,7 @@ export default function App() {
             meetings={meetings}
             customers={customers}
             onAddMeeting={addMeeting}
+            onSelectCustomer={setSelectedCustomerId}
           />
           <QuickNotes notes={notes} onAdd={addNote} onDelete={removeNote} />
         </div>

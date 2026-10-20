@@ -32,9 +32,21 @@ export function isThisWeek(isoDate: string, today: Date = new Date()): boolean {
   return diff >= 0 && diff <= 6;
 }
 
+export function isOverdue(isoDate: string, today: Date = new Date()): boolean {
+  return daysUntil(isoDate, today) < 0;
+}
+
 export function formatDate(isoDate: string): string {
   return parseLocalDate(isoDate).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
   });
+}
+
+export function formatDueDate(isoDate: string, today: Date = new Date()): string {
+  const diff = daysUntil(isoDate, today);
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
+  if (diff === -1) return 'Yesterday';
+  return formatDate(isoDate);
 }

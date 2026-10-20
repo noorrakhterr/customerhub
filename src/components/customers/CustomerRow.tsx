@@ -1,5 +1,5 @@
 import { formatDate } from '../../data/dateUtils';
-import { taskDisplayTitle } from '../../data/taskKinds';
+import { hasDueDate, taskDisplayTitle } from '../../data/taskKinds';
 import type { Customer } from '../../types/customer';
 import type { Task } from '../../types/task';
 
@@ -12,7 +12,7 @@ interface CustomerRowProps {
 
 export function CustomerRow({ customer, tasks, onClick, onDelete }: CustomerRowProps) {
   const openTasks = tasks
-    .filter((t) => t.customerId === customer.id && !t.completed)
+    .filter((t) => t.customerId === customer.id && !t.completed && hasDueDate(t))
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
   const nextTask = openTasks[0];
 

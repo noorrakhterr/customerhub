@@ -1,4 +1,4 @@
-import { TASK_KIND_FIELDS, taskDisplayTitle } from '../../data/taskKinds';
+import { TASK_KIND_FIELDS, hasDueDate, taskDisplayTitle } from '../../data/taskKinds';
 import type { NewTask, Task } from '../../types/task';
 
 interface TaskRowProps {
@@ -26,13 +26,15 @@ export function TaskRow({ task, onToggleComplete, onEditTask, onDeleteTask, disa
           disabled={disabled}
         />
         <div className="task-row__title">{taskDisplayTitle(task)}</div>
-        <input
-          type="date"
-          className="task-row__due"
-          defaultValue={task.dueDate.slice(0, 10)}
-          onBlur={(e) => onEditTask(task.id, { dueDate: new Date(e.target.value).toISOString() })}
-          disabled={disabled}
-        />
+        {hasDueDate(task) && (
+          <input
+            type="date"
+            className="task-row__due"
+            defaultValue={task.dueDate.slice(0, 10)}
+            onBlur={(e) => onEditTask(task.id, { dueDate: new Date(e.target.value).toISOString() })}
+            disabled={disabled}
+          />
+        )}
         <button
           className="task-row__delete"
           onClick={() => onDeleteTask(task.id)}

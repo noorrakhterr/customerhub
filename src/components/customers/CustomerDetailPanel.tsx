@@ -12,7 +12,7 @@ import type { NewTask, Task, TaskKind } from '../../types/task';
 type Tab = 'details' | 'tasks' | 'docs';
 
 const CTA_TYPES: CtaType[] = ['Value Accelerator', 'OCI', 'OWI', 'AMFA'];
-const LEADING_KINDS: TaskKind[] = ['ae_outreach', 'research_customer'];
+const LEADING_KINDS: TaskKind[] = ['research_customer', 'ae_outreach'];
 const TRAILING_KINDS: TaskKind[] = ['meeting_prep', 'meeting_follow_up'];
 
 interface CustomerDetailPanelProps {

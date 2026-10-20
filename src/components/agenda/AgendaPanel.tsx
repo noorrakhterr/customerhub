@@ -13,6 +13,7 @@ interface AgendaPanelProps {
   meetings: Meeting[];
   customers: Customer[];
   onAddMeeting: (input: NewMeeting) => void;
+  onSelectCustomer: (id: string) => void;
 }
 
 export function AgendaPanel({
@@ -20,6 +21,7 @@ export function AgendaPanel({
   meetings,
   customers,
   onAddMeeting,
+  onSelectCustomer,
 }: AgendaPanelProps) {
   const [range, setRange] = useState<Range>('today');
 
@@ -43,10 +45,12 @@ export function AgendaPanel({
         </div>
       }
     >
-      <div className="agenda-subsection">
-        <h3>Tasks</h3>
-        <AgendaTasks tasks={tasks} customers={customers} range={range} />
-      </div>
+      <AgendaTasks
+        tasks={tasks}
+        customers={customers}
+        range={range}
+        onSelectCustomer={onSelectCustomer}
+      />
 
       <AgendaMeetings
         meetings={meetings}

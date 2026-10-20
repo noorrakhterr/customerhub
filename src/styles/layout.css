@@ -139,6 +139,10 @@
   background: #faf8fd;
 }
 
+.task-item--clickable {
+  cursor: pointer;
+}
+
 .task-item__title {
   font-weight: 700;
 }

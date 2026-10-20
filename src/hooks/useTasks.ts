@@ -105,7 +105,7 @@ export function useTasks() {
           customerId: task.customerId,
           kind: 'research_customer',
           title: '',
-          dueDate: addDays(task.dueDate, 2),
+          dueDate: '',
           completed: false,
           fields: {},
         });
@@ -114,7 +114,7 @@ export function useTasks() {
           customerId: task.customerId,
           kind: 'customer_outreach',
           title: '',
-          dueDate: addDays(task.dueDate, 2),
+          dueDate: isoInDays(2),
           completed: false,
           outreachIndex: 1,
           fields: {},
