@@ -15,6 +15,7 @@ export interface Customer {
   healthScore: number;
   pathToGreenLink?: string;
   valueAcceleratorDetails?: string;
+  valueAcceleratorStatus?: string;
   closed: boolean;
   createdAt: string;
   updatedAt: string;

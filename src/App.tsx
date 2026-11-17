@@ -22,6 +22,7 @@ export default function App() {
     createInitialTask,
     markCustomerResponded,
     addClosureLogEntry,
+    startStatusUpdates,
     toggleComplete,
   } = useTasks();
   const { meetings, add: addMeeting } = useMeetings();
@@ -85,6 +86,7 @@ export default function App() {
           onDeleteTask={removeTask}
           onToggleTaskComplete={toggleComplete}
           onMarkCustomerResponded={markCustomerResponded}
+          onStartStatusUpdates={startStatusUpdates}
           onCloseCustomer={handleCloseCustomer}
           onAddDoc={addDoc}
         />

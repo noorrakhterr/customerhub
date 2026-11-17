@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { getCustomer } from '../data/customers';
 import { createTask, deleteTask, listTasks, updateTask } from '../data/tasks';
 import { toDateOnlyIso } from '../data/dateUtils';
-import { AE_OUTREACH_DUE_IN_DAYS, OUTREACH_INTERVAL_DAYS } from '../data/taskKinds';
+import {
+  AE_OUTREACH_DUE_IN_DAYS,
+  OUTREACH_INTERVAL_DAYS,
+  STATUS_UPDATE_INTERVAL_DAYS,
+} from '../data/taskKinds';
 import type { NewTask, Task } from '../types/task';
 
 function isCustomerClosed(customerId: string): boolean {
@@ -56,6 +60,29 @@ export function useTasks() {
       kind: 'ae_outreach',
       title: '',
       dueDate: isoInDays(AE_OUTREACH_DUE_IN_DAYS),
+      completed: false,
+      fields: {},
+    });
+    createTask({
+      customerId,
+      kind: 'value_accelerator_status',
+      title: '',
+      dueDate: isoInDays(STATUS_UPDATE_INTERVAL_DAYS),
+      completed: false,
+      fields: {},
+    });
+    refresh();
+  };
+
+  const startStatusUpdates = (customerId: string) => {
+    if (isCustomerClosed(customerId)) return;
+    const existing = listTasks().filter((t) => t.customerId === customerId);
+    if (existing.some((t) => t.kind === 'value_accelerator_status' && !t.completed)) return;
+    createTask({
+      customerId,
+      kind: 'value_accelerator_status',
+      title: '',
+      dueDate: isoInDays(STATUS_UPDATE_INTERVAL_DAYS),
       completed: false,
       fields: {},
     });
@@ -144,6 +171,20 @@ export function useTasks() {
           completed: false,
           fields: {},
         });
+      } else if (task.kind === 'value_accelerator_status') {
+        const nextAlreadyExists = customerTasks.some(
+          (t) => t.kind === 'value_accelerator_status' && t.id !== task.id && !t.completed,
+        );
+        if (!nextAlreadyExists) {
+          createTask({
+            customerId: task.customerId,
+            kind: 'value_accelerator_status',
+            title: '',
+            dueDate: addDays(task.dueDate, STATUS_UPDATE_INTERVAL_DAYS),
+            completed: false,
+            fields: {},
+          });
+        }
       }
     }
 
@@ -159,6 +200,7 @@ export function useTasks() {
     createInitialTask,
     markCustomerResponded,
     addClosureLogEntry,
+    startStatusUpdates,
     toggleComplete,
     refresh,
   };

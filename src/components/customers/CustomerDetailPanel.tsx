@@ -27,6 +27,7 @@ interface CustomerDetailPanelProps {
   onDeleteTask: (id: string) => void;
   onToggleTaskComplete: (id: string) => void;
   onMarkCustomerResponded: (customerId: string, responseText: string) => void;
+  onStartStatusUpdates: (customerId: string) => void;
   onCloseCustomer: (customerId: string, reason: string) => void;
   onAddDoc: (input: NewDoc) => void;
 }
@@ -43,6 +44,7 @@ export function CustomerDetailPanel({
   onDeleteTask,
   onToggleTaskComplete,
   onMarkCustomerResponded,
+  onStartStatusUpdates,
   onCloseCustomer,
   onAddDoc,
 }: CustomerDetailPanelProps) {
@@ -74,12 +76,16 @@ export function CustomerDetailPanel({
   const customTasks = customerTasks
     .filter((t) => t.kind === 'custom')
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  const statusUpdateTasks = customerTasks
+    .filter((t) => t.kind === 'value_accelerator_status')
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
   const hasOutreachStarted = outreachTasks.length > 0;
   const hasResearchCustomer = customerTasks.some((t) => t.kind === 'research_customer');
   const hasMeetingPrep = customerTasks.some((t) => t.kind === 'meeting_prep');
   const showCustomerRespondedForm = hasOutreachStarted && !hasMeetingPrep && !isClosed;
   const showStartOutreach = hasResearchCustomer && !hasOutreachStarted && !isClosed;
+  const showStartStatusUpdates = statusUpdateTasks.length === 0 && !isClosed;
 
   const customerDocs = docs.filter((d) => d.customerId === customer.id);
 
@@ -275,6 +281,18 @@ export function CustomerDetailPanel({
             </div>
           )}
 
+          <div className="form-field">
+            <label>Status</label>
+            <textarea
+              rows={3}
+              placeholder="Current status..."
+              defaultValue={customer.valueAcceleratorStatus ?? ''}
+              onBlur={(e) =>
+                onUpdateCustomer(customer.id, { valueAcceleratorStatus: e.target.value })
+              }
+            />
+          </div>
+
           <div className="customer-detail__close-action">
             {isClosed ? (
               <Button
@@ -341,7 +359,11 @@ export function CustomerDetailPanel({
             </div>
           ))}
 
-          {leadingTasks.length === 0 && outreachTasks.length === 0 && trailingTasks.length === 0 && customTasks.length === 0 ? (
+          {leadingTasks.length === 0 &&
+          outreachTasks.length === 0 &&
+          trailingTasks.length === 0 &&
+          customTasks.length === 0 &&
+          statusUpdateTasks.length === 0 ? (
             <p className="empty-state">No tasks yet.</p>
           ) : (
             <>
@@ -410,6 +432,27 @@ export function CustomerDetailPanel({
                   disabled={isClosed}
                 />
               ))}
+              {statusUpdateTasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  onToggleComplete={onToggleTaskComplete}
+                  onEditTask={onEditTask}
+                  onDeleteTask={onDeleteTask}
+                  disabled={isClosed}
+                />
+              ))}
+              {showStartStatusUpdates && (
+                <div className="form-actions" style={{ justifyContent: 'flex-start' }}>
+                  <Button
+                    variant="ghost"
+                    small
+                    onClick={() => onStartStatusUpdates(customer.id)}
+                  >
+                    + Start weekly status updates
+                  </Button>
+                </div>
+              )}
             </>
           )}
 

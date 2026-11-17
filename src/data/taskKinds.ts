@@ -14,6 +14,7 @@ export const TASK_KIND_LABELS: Record<TaskKind, string> = {
   meeting_follow_up: 'Meeting Follow-up',
   custom: 'Custom task',
   closure_log: 'Customer closed',
+  value_accelerator_status: 'Update Status',
 };
 
 export const TASK_KIND_FIELDS: Record<TaskKind, TaskFieldDef[]> = {
@@ -35,10 +36,12 @@ export const TASK_KIND_FIELDS: Record<TaskKind, TaskFieldDef[]> = {
   ],
   custom: [{ key: 'notes', label: 'Notes', type: 'textarea' }],
   closure_log: [{ key: 'reason', label: 'Reason for closing', type: 'textarea' }],
+  value_accelerator_status: [],
 };
 
 export const AE_OUTREACH_DUE_IN_DAYS = 3;
 export const OUTREACH_INTERVAL_DAYS = 2;
+export const STATUS_UPDATE_INTERVAL_DAYS = 7;
 
 export const TASK_KINDS_WITHOUT_DUE_DATE: TaskKind[] = ['research_customer'];
 

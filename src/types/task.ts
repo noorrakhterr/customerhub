@@ -5,7 +5,8 @@ export type TaskKind =
   | 'meeting_prep'
   | 'meeting_follow_up'
   | 'custom'
-  | 'closure_log';
+  | 'closure_log'
+  | 'value_accelerator_status';
 
 export interface Task {
   id: string;
